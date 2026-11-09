@@ -1,0 +1,1602 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#376fa3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FocusFlow">
+    <title>FocusFlow — Gentle ADHD Companion</title>
+    <!-- Self-Contained Fallback Styles -->
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #fdfbf6; color: #1e293b; line-height: 1.5; }
+        .hidden { display: none !important; }
+        button { cursor: pointer; font-family: inherit; }
+        header { max-width: 56rem; margin: 0 auto; padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+        main { max-width: 56rem; margin: 0 auto; padding: 0 16px 96px; }
+        nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .card-fallback { background: #ffffff; border: 1px solid #dbeafe; border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+    </style>
+    <!-- Dynamic PWA App Icon & Manifest Injection for Home Screen Install -->
+    <script>
+        (function setupPWA() {
+            try {
+                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#376fa3"/><circle cx="256" cy="256" r="110" fill="none" stroke="#fdfbf6" stroke-width="34"/><path d="M256 76v48M256 388v48M76 256h48M388 256h48M129 129l34 34M349 349l34 34M383 129l-34 34M163 349l-34 34" stroke="#fbbf24" stroke-width="32" stroke-linecap="round"/></svg>`;
+                const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
+
+                const appleIcon = document.createElement('link');
+                appleIcon.rel = 'apple-touch-icon';
+                appleIcon.href = iconUrl;
+                document.head.appendChild(appleIcon);
+
+                if (location.protocol.startsWith('http')) {
+                    const manifest = {
+                        name: 'FocusFlow — ADHD Companion',
+                        short_name: 'FocusFlow',
+                        description: 'Gamified, voice-enabled ADHD focus timer, task shrinker, and sensory audio companion.',
+                        start_url: '.',
+                        display: 'standalone',
+                        background_color: '#fdfbf6',
+                        theme_color: '#376fa3',
+                        icons: [
+                            { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+                            { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+                        ]
+                    };
+                    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+                    const manifestLink = document.createElement('link');
+                    manifestLink.rel = 'manifest';
+                    manifestLink.href = URL.createObjectURL(manifestBlob);
+                    document.head.appendChild(manifestLink);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        cream: {
+                            50: '#fdfbf6',
+                            100: '#f8f3e8',
+                            200: '#efe6d5',
+                            300: '#e2d3b8',
+                        },
+                        calm: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7cc6fb',
+                            400: '#38a8f5',
+                            500: '#5b9bd5',
+                            600: '#376fa3',
+                            700: '#2b5882',
+                            800: '#1e3f5e',
+                            900: '#162d44',
+                        },
+                        navy: {
+                            800: '#1a2744',
+                            900: '#0f172a',
+                            950: '#090e1a',
+                        },
+                        gold: {
+                            300: '#fde047',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .timer-ring-circle {
+            transition: stroke-dashoffset 0.5s ease-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        @keyframes pulse-gentle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-pulse-gentle {
+            animation: pulse-gentle 3s infinite ease-in-out;
+        }
+        @keyframes mic-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+        .mic-recording {
+            animation: mic-pulse 1.2s infinite;
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #dc2626 !important;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.35);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-cream-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 selection:bg-calm-200 dark:selection:bg-calm-800 pb-24 sm:pb-8">
+
+    <!-- Custom Toast / Message Notification Banner -->
+    <div id="toast-container" class="fixed top-4 right-4 sm:bottom-5 sm:top-auto z-50 flex flex-col gap-2 pointer-events-none max-w-[90vw]"></div>
+
+    <!-- Transition Anchor Modal -->
+    <div id="transition-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-3xl bg-cream-50 dark:bg-slate-900 border-2 border-calm-300 dark:border-calm-700 p-6 shadow-2xl">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-3xl">&#128721;</span>
+                <div>
+                    <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white">Transition Guard Active</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Your timer is still running! Don't lose your momentum.</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-700 dark:text-slate-200 mb-5 bg-calm-100/70 dark:bg-calm-900/40 p-3.5 rounded-2xl border border-calm-200 dark:border-calm-800">
+                Switching tabs mid-sprint is the #1 ADHD distraction trap. Are you parking a random thought, or intentionally switching?
+            </p>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+                <button type="button" onclick="cancelTransition()" class="flex-1 py-3 px-4 rounded-xl bg-calm-600 hover:bg-calm-700 text-white font-bold text-sm shadow-sm transition">
+                    &#128281; Stay on Sprint (+10 XP)
+                </button>
+                <button type="button" onclick="confirmTransition()" class="py-3 px-4 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-200 dark:border-slate-700 transition">
+                    Continue Switch &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Header & Gamification Status Bar -->
+    <header class="max-w-4xl mx-auto px-4 pt-4 pb-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-calm-500 to-calm-700 flex items-center justify-center text-white shadow-md shadow-calm-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-display font-bold text-xl tracking-tight text-slate-900 dark:text-white">FocusFlow</h1>
+                    <span id="level-badge" class="px-2 py-0.5 rounded-full bg-calm-100 dark:bg-calm-900/70 text-calm-800 dark:text-calm-200 text-[11px] font-extrabold border border-calm-300/70 dark:border-calm-700">
+                        LVL 1
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <div class="w-24 sm:w-32 h-1.5 rounded-full bg-cream-200 dark:bg-slate-800 overflow-hidden">
+                        <div id="xp-progress-bar" class="h-full bg-gradient-to-r from-calm-500 to-amber-500 transition-all duration-500" style="width: 15%"></div>
+                    </div>
+                    <span id="xp-text" class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">15 / 100 XP</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <!-- Save Status Pill -->
+            <span id="cloud-sync-pill" title="Automatic progress saving status" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                <span id="cloud-sync-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span id="cloud-sync-text">Saved</span>
+            </span>
+
+            <!-- Streak Pill -->
+            <span id="streak-pill" class="px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 text-xs font-bold text-amber-700 dark:text-amber-300">
+                &#128293; 1x
+            </span>
+
+            <!-- Energy Level Quick-Check -->
+            <div class="hidden sm:flex items-center bg-white/80 dark:bg-slate-800/80 border border-cream-200 dark:border-slate-700/80 rounded-2xl p-1 shadow-sm" title="Current Brain Battery">
+                <button type="button" onclick="setEnergy('low')" id="energy-low" class="px-2.5 py-1 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-cream-100 dark:hover:bg-slate-700">&#129707; Low</button>
+                <button type="button" onclick="setEnergy('med')" id="energy-med" class="px-2.5 py-1 rounded-xl text-xs font-medium transition-all bg-calm-100 dark:bg-calm-900/60 text-calm-800 dark:text-calm-200 shadow-sm">&#128267; Okay</button>
+                <button type="button" onclick="setEnergy('high')" id="energy-high" class="px-2.5 py-1 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-cream-100 dark:hover:bg-slate-700">&#9889; High</button>
+            </div>
+
+            <!-- Dark Mode Toggle -->
+            <button type="button" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode" class="p-2 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-cream-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 hover:bg-cream-100 dark:hover:bg-slate-700 transition shadow-sm">
+                <svg id="sun-icon" class="w-4 h-4 hidden dark:block text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                </svg>
+                <svg id="moon-icon" class="w-4 h-4 block dark:hidden text-calm-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4">
+
+        <!-- Desktop / Tablet Top Navigation Tabs -->
+        <nav aria-label="Primary Tabs" class="hidden sm:grid grid-cols-4 gap-2.5 mb-6 bg-cream-100/90 dark:bg-slate-800/80 p-1.5 rounded-3xl border border-cream-200 dark:border-slate-700/80 shadow-sm">
+            <button type="button" onclick="requestTabSwitch('active')" id="tab-btn-active" class="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-display font-bold text-sm transition-all bg-calm-100/90 dark:bg-calm-950/80 text-calm-800 dark:text-calm-200 border border-calm-300/70 dark:border-calm-700 shadow-sm">
+                <span class="text-base">&#127919;</span>
+                <span>1. Active Tasks</span>
+                <span id="badge-active" class="ml-0.5 px-2 py-0.5 text-xs rounded-full bg-calm-200/80 dark:bg-calm-800 text-calm-900 dark:text-calm-100 font-bold">0</span>
+            </button>
+
+            <button type="button" onclick="requestTabSwitch('thoughts')" id="tab-btn-thoughts" class="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-display font-bold text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-800">
+                <span class="text-base">&#128173;</span>
+                <span>2. Thoughts</span>
+                <span id="badge-thoughts" class="ml-0.5 px-2 py-0.5 text-xs rounded-full bg-fuchsia-100 dark:bg-fuchsia-900/60 text-fuchsia-700 dark:text-fuchsia-200 font-bold">0</span>
+            </button>
+
+            <button type="button" onclick="requestTabSwitch('tasks')" id="tab-btn-tasks" class="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-display font-bold text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-800">
+                <span class="text-base">&#128203;</span>
+                <span>3. Task List</span>
+                <span id="badge-tasks" class="ml-0.5 px-2 py-0.5 text-xs rounded-full bg-navy-900/10 dark:bg-gold-500/20 text-navy-900 dark:text-gold-300 font-bold">0</span>
+            </button>
+
+            <button type="button" onclick="requestTabSwitch('audio')" id="tab-btn-audio" class="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-display font-bold text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-800">
+                <span class="text-base">&#127911;</span>
+                <span>4. Focus Audio</span>
+                <span id="badge-audio" class="ml-0.5 px-2 py-0.5 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-200 font-bold">Off</span>
+            </button>
+        </nav>
+
+        <!-- Mobile Sticky Top Navigation Bar -->
+        <nav aria-label="Mobile Navigation Tabs" class="sm:hidden sticky top-2 z-40 mb-5 bg-cream-50/95 dark:bg-slate-900/95 backdrop-blur-md border border-calm-200 dark:border-slate-700 rounded-2xl p-1.5 grid grid-cols-4 gap-1 shadow-md">
+            <button type="button" onclick="requestTabSwitch('active')" id="m-tab-btn-active" class="flex flex-col items-center justify-center py-1.5 rounded-xl bg-calm-100 dark:bg-calm-900/70 text-calm-800 dark:text-calm-200 font-bold text-[11px]">
+                <span class="text-base leading-none mb-0.5">&#127919;</span>
+                <span>Active (<span id="m-badge-active">0</span>)</span>
+            </button>
+            <button type="button" onclick="requestTabSwitch('thoughts')" id="m-tab-btn-thoughts" class="flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
+                <span class="text-base leading-none mb-0.5">&#128173;</span>
+                <span>Thoughts (<span id="m-badge-thoughts">0</span>)</span>
+            </button>
+            <button type="button" onclick="requestTabSwitch('tasks')" id="m-tab-btn-tasks" class="flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
+                <span class="text-base leading-none mb-0.5">&#128203;</span>
+                <span>Tasks (<span id="m-badge-tasks">0</span>)</span>
+            </button>
+            <button type="button" onclick="requestTabSwitch('audio')" id="m-tab-btn-audio" class="flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
+                <span class="text-base leading-none mb-0.5">&#127911;</span>
+                <span id="m-badge-audio">Audio</span>
+            </button>
+        </nav>
+
+        <!-- ========================================================= -->
+        <!-- SENSORY VISUAL ANCHOR PANEL                               -->
+        <!-- ========================================================= -->
+        <section id="sensory-video-panel" class="hidden mb-6 rounded-3xl overflow-hidden bg-gradient-to-br from-cream-50 via-calm-50/90 to-calm-100/80 dark:from-slate-900 dark:via-calm-950/60 dark:to-slate-900 border border-calm-200/90 dark:border-calm-800/80 shadow-md transition-all">
+            <div class="px-4 py-2.5 bg-white/80 dark:bg-slate-900/80 border-b border-calm-200/70 dark:border-calm-800/70 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-calm-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-calm-600"></span>
+                    </span>
+                    <span class="text-xs font-display font-bold text-calm-900 dark:text-calm-100">Sensory Focus Anchor</span>
+                    <span id="sensory-track-badge" class="hidden sm:inline text-[11px] px-2 py-0.5 rounded-full bg-calm-100 dark:bg-calm-900/60 text-calm-700 dark:text-calm-300 font-medium">Playing Audio</span>
+                </div>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <button type="button" onclick="setSensoryMode('mop')" id="sensory-btn-mop" class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-calm-600 text-white shadow-sm transition">
+                        &#129533; Clean Mop
+                    </button>
+                    <button type="button" onclick="setSensoryMode('wash')" id="sensory-btn-wash" class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-cream-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-calm-100 transition">
+                        &#128166; Power Wash
+                    </button>
+                    <button type="button" onclick="setSensoryMode('rain')" id="sensory-btn-rain" class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-cream-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-calm-100 transition">
+                        &#127783; Rain Glass
+                    </button>
+                    <button type="button" onclick="setSensoryMode('wave')" id="sensory-btn-wave" class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-cream-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-calm-100 transition">
+                        &#127754; Wave
+                    </button>
+                    <button type="button" onclick="toggleSensoryCollapse()" id="sensory-collapse-btn" title="Minimize or expand visual" class="px-2 py-1 rounded-xl text-[11px] font-semibold bg-white dark:bg-slate-800 border border-calm-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-calm-50 transition">
+                        Hide
+                    </button>
+                </div>
+            </div>
+            <div id="sensory-canvas-wrapper" class="relative w-full h-40 sm:h-48 bg-cream-100 dark:bg-slate-950 overflow-hidden">
+                <canvas id="sensory-canvas" class="w-full h-full block"></canvas>
+                <div id="sensory-caption" class="absolute bottom-2.5 left-3 px-2.5 py-1 rounded-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm text-[11px] font-medium text-calm-900 dark:text-calm-200 border border-calm-200/60 dark:border-calm-800/60 pointer-events-none">
+                    &#129533; Satisfying floor-mop loop — let your background eyes lock in while you work
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: ACTIVE TASKS (LIGHT CREAM & LIGHT SKY BLUE THEME)  -->
+        <!-- ========================================================= -->
+        <section id="panel-active" class="space-y-6">
+
+            <!-- Current Focus Anchor & Gamified Deadline Ring -->
+            <div class="card-fallback rounded-3xl bg-gradient-to-br from-cream-50 via-calm-50/70 to-calm-100/50 dark:from-slate-900 dark:via-calm-950/40 dark:to-slate-900 border border-calm-200/80 dark:border-calm-800/70 p-5 sm:p-8 shadow-sm transition-colors">
+                <div class="flex flex-col md:flex-row items-center gap-6 md:gap-8">
+
+                    <!-- Circular Deadline Pressure Ring -->
+                    <div class="relative w-44 h-44 sm:w-48 sm:h-48 flex-shrink-0 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 120 120">
+                            <circle class="text-cream-200 dark:text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
+                            <circle id="timer-progress-ring" class="timer-ring-circle text-calm-500 dark:text-calm-400" stroke-width="8" stroke-dasharray="326.7256" stroke-dashoffset="0" stroke-linecap="round" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                            <span id="timer-mode-label" class="text-[11px] font-bold uppercase tracking-wider text-calm-700 dark:text-calm-300">Focus Sprint</span>
+                            <span id="timer-display" class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mt-0.5">15:00</span>
+                            <span id="sprint-reward-badge" class="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">+50 XP on finish</span>
+                        </div>
+                    </div>
+
+                    <!-- Active Task Details & Controls -->
+                    <div class="flex-1 w-full text-center md:text-left">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-calm-100/90 dark:bg-calm-900/50 border border-calm-200/80 dark:border-calm-700/70 text-calm-800 dark:text-calm-200 text-xs font-semibold mb-2">
+                            <span class="w-2 h-2 rounded-full bg-calm-500 animate-ping"></span>
+                            <span>Right Now Anchor</span>
+                        </div>
+
+                        <h2 id="active-task-title" class="font-display font-bold text-xl sm:text-2xl text-slate-900 dark:text-white leading-snug mb-1.5">
+                            Pick one tiny thing to start
+                        </h2>
+                        <p id="active-task-subtitle" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-4">
+                            Beat starting paralysis: just commit to a 5-minute sprint.
+                        </p>
+
+                        <!-- Timer Duration Presets + Final 10% Boredom-Buster Mode -->
+                        <div class="flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2 mb-4">
+                            <button type="button" onclick="setTimerMinutes(5)" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-cream-100 dark:bg-slate-800 text-calm-800 dark:text-calm-200 border border-cream-200 dark:border-slate-700 hover:bg-calm-100 transition">5m Starter</button>
+                            <button type="button" onclick="setTimerMinutes(15)" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-cream-100 dark:bg-slate-800 text-calm-800 dark:text-calm-200 border border-cream-200 dark:border-slate-700 hover:bg-calm-100 transition">15m Sprint</button>
+                            <button type="button" onclick="setTimerMinutes(25)" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-cream-100 dark:bg-slate-800 text-calm-800 dark:text-calm-200 border border-cream-200 dark:border-slate-700 hover:bg-calm-100 transition">25m Deep</button>
+                            <button type="button" onclick="activateFinalSprint()" id="final-sprint-btn" title="Getting bored near the end? Activate a 5-min Final Boss Sprint for 2x XP!" class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700 transition">
+                                &#127937; Final 10% (2x XP)
+                            </button>
+                        </div>
+
+                        <!-- Action Controls -->
+                        <div class="flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+                            <button type="button" onclick="toggleTimer()" id="timer-toggle-btn" class="px-5 py-3 rounded-2xl bg-calm-600 hover:bg-calm-700 text-white font-display font-bold text-sm shadow-md shadow-calm-600/20 transition flex items-center gap-2">
+                                <span id="timer-toggle-icon">&#9654;</span>
+                                <span id="timer-toggle-text">Start Sprint</span>
+                            </button>
+
+                            <button type="button" onclick="completeCurrentActiveTask()" id="complete-active-btn" class="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-display font-bold text-sm shadow-sm transition flex items-center gap-1.5">
+                                <span>&#10003;</span>
+                                <span>Done! (+XP)</span>
+                            </button>
+
+                            <button type="button" onclick="resetTimer()" aria-label="Reset Timer" class="p-3 rounded-2xl bg-white/90 dark:bg-slate-800 hover:bg-cream-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-cream-200 dark:border-slate-700 transition">
+                                &#8634;
+                            </button>
+
+                            <!-- Quick Brown Noise Toggle -->
+                            <div class="inline-flex items-center rounded-2xl bg-calm-100/90 dark:bg-calm-950/60 border border-calm-200 dark:border-calm-800/80 overflow-hidden">
+                                <button type="button" onclick="toggleQuickBrownNoise()" id="audio-toggle-btn" class="px-3.5 py-3 text-calm-800 dark:text-calm-200 hover:bg-calm-200/70 dark:hover:bg-calm-900/60 font-medium text-xs transition flex items-center gap-1.5">
+                                    <span id="audio-icon">&#128263;</span>
+                                    <span id="audio-label">Brown Noise</span>
+                                </button>
+                                <button type="button" onclick="requestTabSwitch('audio')" title="Open full Focus Audio library" class="px-2.5 py-3 border-l border-calm-200 dark:border-calm-800/80 text-calm-700 dark:text-calm-300 hover:bg-calm-200/70 dark:hover:bg-calm-900/60 text-xs font-bold transition">
+                                    &#127911;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Grid: Open Tabs & Task Paralysis Buster -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Open Browser / Brain Tabs -->
+                <div class="card-fallback rounded-3xl bg-cream-50/90 dark:bg-slate-900 border border-calm-200/80 dark:border-calm-800/60 p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>&#128450;</span>
+                                <span>Open Tabs (Max 3)</span>
+                            </h3>
+                            <span id="tab-limit-counter" class="text-xs font-bold px-2.5 py-1 rounded-full bg-calm-100 dark:bg-calm-900/50 text-calm-800 dark:text-calm-200">0 / 3 slots</span>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mb-4">
+                            Keep only 3 active items open at once so your brain doesn't stall.
+                        </p>
+
+                        <form onsubmit="addActiveTab(event)" class="flex gap-2 mb-4">
+                            <input type="text" id="new-active-tab-input" placeholder="Add or speak an active tab..." class="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-calm-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-calm-400">
+                            <button type="button" onclick="startVoiceInput('new-active-tab-input', this)" title="Speak task" class="px-3 py-2.5 rounded-2xl bg-calm-100 hover:bg-calm-200 dark:bg-slate-800 text-calm-800 dark:text-calm-200 border border-calm-200 dark:border-slate-700 text-sm transition">
+                                &#127897;
+                            </button>
+                            <button type="submit" class="px-4 py-2.5 rounded-2xl bg-calm-600 hover:bg-calm-700 text-white font-semibold text-sm transition shadow-sm">
+                                Add
+                            </button>
+                        </form>
+
+                        <div id="active-tabs-list" class="space-y-2.5"></div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-calm-200/60 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                        <span>Need to pull from your backlog?</span>
+                        <button type="button" onclick="requestTabSwitch('tasks')" class="text-calm-700 dark:text-calm-300 font-semibold hover:underline">Open Task List &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- Task Paralysis Buster -->
+                <div class="card-fallback rounded-3xl bg-gradient-to-b from-calm-50/95 to-cream-50 dark:from-calm-950/35 dark:to-slate-900 border border-calm-200/90 dark:border-calm-800/70 p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>&#129668;</span>
+                                <span>Task Paralysis Buster</span>
+                            </h3>
+                            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-calm-100 dark:bg-calm-900/60 text-calm-800 dark:text-calm-200">2-Min Steps</span>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mb-4">
+                            Brain frozen on starting? Speak or type the scary task to shrink it into 3 tiny steps.
+                        </p>
+
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="shrink-task-input" placeholder="e.g., Study chapter 4 or clean desk" class="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-calm-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-calm-400">
+                            <button type="button" onclick="startVoiceInput('shrink-task-input', this)" title="Speak scary task" class="px-3 py-2.5 rounded-2xl bg-calm-100 hover:bg-calm-200 dark:bg-slate-800 text-calm-800 dark:text-calm-200 border border-calm-200 dark:border-slate-700 text-sm transition">
+                                &#127897;
+                            </button>
+                            <button type="button" onclick="breakDownTaskWithAI()" id="shrink-btn" class="px-4 py-2.5 rounded-2xl bg-calm-600 hover:bg-calm-700 text-white font-semibold text-sm transition shadow-sm whitespace-nowrap">
+                                Shrink It
+                            </button>
+                        </div>
+
+                        <div id="shrink-results-container" class="space-y-2">
+                            <div class="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/60 border border-dashed border-calm-300/80 dark:border-calm-700 text-xs text-calm-800/80 dark:text-calm-200/80 text-center">
+                                Your 3 bite-sized starter steps will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="shrink-actions-footer" class="hidden mt-4 pt-3 border-t border-calm-200/60 dark:border-calm-800/40 flex justify-end">
+                        <button type="button" onclick="sendStepsToActive()" class="text-xs font-bold text-calm-700 dark:text-calm-300 hover:underline">
+                            + Load Step 1 into Active Focus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: RANDOM THOUGHTS                                    -->
+        <!-- ========================================================= -->
+        <section id="panel-thoughts" class="hidden space-y-6">
+            <div class="card-fallback rounded-3xl bg-gradient-to-br from-fuchsia-500 via-purple-600 to-amber-500 p-[2px] shadow-md">
+                <div class="rounded-[22px] bg-white dark:bg-slate-900 p-5 sm:p-8">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div>
+                            <span class="inline-block text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-fuchsia-100 dark:bg-fuchsia-950 text-fuchsia-700 dark:text-fuchsia-300 mb-1">
+                                Zero-Friction Brain Dump
+                            </span>
+                            <h2 class="font-display font-bold text-xl sm:text-2xl text-slate-900 dark:text-white">
+                                Random Thoughts Parking Lot &#128173;
+                            </h2>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="autoGroupThoughtsWithAI()" id="ai-group-thoughts-btn" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:opacity-95 text-white text-xs font-bold shadow-sm transition">
+                                &#129668; AI Auto-Group
+                            </button>
+                            <button type="button" onclick="clearAllThoughts()" class="text-xs font-medium text-slate-400 hover:text-rose-500 transition">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-4">
+                        Don't want to type? Tap <strong>&#127897; Speak</strong> to dump distracting thoughts hands-free and get right back to your sprint.
+                    </p>
+
+                    <form onsubmit="addThought(event)" class="flex flex-col sm:flex-row gap-2.5">
+                        <div class="flex-1 flex gap-2">
+                            <input type="text" id="thought-input" placeholder="Speak or type a random thought..." class="flex-1 min-w-0 px-4 py-3.5 rounded-2xl bg-fuchsia-50/50 dark:bg-slate-800 border-2 border-fuchsia-200 dark:border-fuchsia-800/60 text-sm focus:outline-none focus:border-fuchsia-500">
+                            <button type="button" onclick="startVoiceInput('thought-input', this, true)" title="Speak thought hands-free" class="px-4 py-3.5 rounded-2xl bg-fuchsia-100 hover:bg-fuchsia-200 dark:bg-fuchsia-950/70 text-fuchsia-700 dark:text-fuchsia-200 border border-fuchsia-300 dark:border-fuchsia-700 text-base transition">
+                                &#127897;
+                            </button>
+                        </div>
+                        <button type="submit" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-fuchsia-600 via-purple-600 to-amber-500 hover:opacity-95 text-white font-display font-bold text-sm shadow-md transition whitespace-nowrap">
+                            Park Thought &#10024;
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="thoughts-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: TASK LIST (NAVY BLUE & GOLD THEME)                 -->
+        <!-- ========================================================= -->
+        <section id="panel-tasks" class="hidden space-y-6">
+            <div class="card-fallback rounded-3xl bg-navy-900 text-white border border-gold-500/30 p-5 sm:p-8 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-gold-500/10 blur-2xl pointer-events-none"></div>
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">
+                    <div>
+                        <span class="inline-block text-[11px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gold-500/20 text-gold-300 border border-gold-400/30 mb-1.5">
+                            Master Backlog
+                        </span>
+                        <h2 class="font-display font-bold text-2xl sm:text-3xl text-white">
+                            Task List Vault
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                            Speak or add tasks here so your Active Tab stays clutter-free.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2 self-start sm:self-center">
+                        <span class="px-3.5 py-2 rounded-2xl bg-navy-800 border border-gold-500/30 text-gold-300 text-xs font-bold">
+                            &#11088; <span id="backlog-count-label">0</span> Locked In
+                        </span>
+                    </div>
+                </div>
+
+                <form onsubmit="addBacklogTask(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 relative z-10">
+                    <div class="sm:col-span-6 flex gap-2">
+                        <input type="text" id="backlog-task-input" placeholder="Speak or type a task..." class="flex-1 min-w-0 px-4 py-3 rounded-2xl bg-navy-800/90 border border-gold-500/30 text-white placeholder-slate-400 text-sm focus:outline-none focus:border-gold-400">
+                        <button type="button" onclick="startVoiceInput('backlog-task-input', this)" title="Speak task" class="px-3.5 py-3 rounded-2xl bg-navy-800 hover:bg-navy-800/70 text-gold-300 border border-gold-500/30 text-sm transition">
+                            &#127897;
+                        </button>
+                    </div>
+
+                    <select id="backlog-effort-select" class="sm:col-span-3 px-3.5 py-3 rounded-2xl bg-navy-800/90 border border-gold-500/30 text-gold-200 text-sm focus:outline-none focus:border-gold-400">
+                        <option value="quick">&#9889; 5-Min Quick Win</option>
+                        <option value="medium" selected>&#127919; 15-Min Focus</option>
+                        <option value="deep">&#127956; Big Project</option>
+                    </select>
+
+                    <button type="submit" class="sm:col-span-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 text-navy-950 font-display font-extrabold text-sm shadow-md transition">
+                        + Add Task
+                    </button>
+                </form>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="filterBacklog('all')" id="filter-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-navy-900 text-gold-300 border border-gold-500/40">All Tasks</button>
+                <button type="button" onclick="filterBacklog('quick')" id="filter-quick" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">&#9889; Quick Wins</button>
+                <button type="button" onclick="filterBacklog('medium')" id="filter-medium" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">&#127919; 15-Min Focus</button>
+                <button type="button" onclick="filterBacklog('deep')" id="filter-deep" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">&#127956; Big Projects</button>
+            </div>
+
+            <div id="backlog-list" class="space-y-3"></div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: FOCUS AUDIO (4 EVIDENCE-BASED ADHD CATEGORIES)     -->
+        <!-- ========================================================= -->
+        <section id="panel-audio" class="hidden space-y-6">
+            <!-- Master Now-Playing & Volume Header -->
+            <div class="card-fallback rounded-3xl bg-gradient-to-br from-cream-50 via-calm-50/80 to-emerald-50/40 dark:from-slate-900 dark:via-calm-950/50 dark:to-slate-900 border border-calm-200/80 dark:border-calm-800/70 p-5 sm:p-7 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-calm-100 dark:bg-calm-900/60 text-calm-800 dark:text-calm-200 mb-1.5">
+                            &#127911; Evidence-Based ADHD Soundscapes
+                        </span>
+                        <h2 id="audio-now-playing-title" class="font-display font-bold text-xl sm:text-2xl text-slate-900 dark:text-white">
+                            No Sound Playing
+                        </h2>
+                        <p id="audio-now-playing-desc" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+                            Tap any track below — activates your Clean Mop sensory visual automatically.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2 bg-white/90 dark:bg-slate-800 px-3.5 py-2 rounded-2xl border border-calm-200/80 dark:border-slate-700">
+                            <span class="text-sm">&#128265;</span>
+                            <input type="range" id="master-volume-slider" min="0" max="100" value="65" oninput="setMasterVolume(this.value)" aria-label="Audio Volume" class="w-24 sm:w-28 accent-calm-600 cursor-pointer">
+                            <span id="master-volume-label" class="text-xs font-bold text-slate-600 dark:text-slate-300 w-8 text-right">65%</span>
+                        </div>
+
+                        <button type="button" onclick="stopAllAudio()" id="stop-all-audio-btn" class="px-4 py-2.5 rounded-2xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 text-rose-700 dark:text-rose-200 font-bold text-xs transition hidden">
+                            &#9209; Stop Audio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. Brown Noise (40-60 Hz) -->
+            <div class="space-y-3">
+                <div class="px-1">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>&#128996;</span>
+                            <span>1. Brown Noise (40–60 Hz Low-Frequency)</span>
+                        </h3>
+                        <span class="text-[11px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full">Scientific Reports (2023)</span>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        Low-frequency sound (40–60 Hz) shown to improve focus and reduce mind-wandering in people with ADHD by masking distractions and calming the nervous system.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <button type="button" onclick="playSoundscape('brown40')" id="sound-card-brown40" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-amber-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#128996;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Deep Brown Noise (40–60Hz)</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Rich low-end rumble tuned to 40–60 Hz to quiet mental chatter.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('brownWarm')" id="sound-card-brownWarm" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-amber-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#129507;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Warm Velvet Brown</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ultra-soft sub-bass blanket for sensitive ears and sensory overload.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('brownGamma')" id="sound-card-brownGamma" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-amber-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#9889;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Brown Noise + 40Hz Pulse</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Combines deep brown noise masking with a gentle 40 Hz focus hum.</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Video Game Soundtracks -->
+            <div class="space-y-3">
+                <div class="px-1">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>&#127918;</span>
+                            <span>2. Video Game Soundtracks</span>
+                        </h3>
+                        <span class="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-100/80 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-full">Cognitive Load Theory</span>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        Composed to sustain immersion for hours without pulling attention — creates a steady "flow" state with zero lyrics or surprise tempo shifts.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <button type="button" onclick="playSoundscape('vgmSaveRoom')" id="sound-card-vgmSaveRoom" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-indigo-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#128367;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Save Room Safe Haven</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Nostalgic, tranquil RPG checkpoint chords with zero sudden changes.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('vgmOverworld')" id="sound-card-vgmOverworld" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-indigo-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#128506;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Peaceful Overworld</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Airy celesta &amp; warm synth pads built for sustained quest focus.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('vgmScifi')" id="sound-card-vgmScifi" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-indigo-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#128640;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Sci-Fi Command Deck</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Steady starship engine hum &amp; atmospheric telemetry harmonics.</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Lo-fi Hip Hop (60-90 BPM Instrumental) -->
+            <div class="space-y-3">
+                <div class="px-1">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>&#127911;</span>
+                            <span>3. Lo-fi Hip Hop (60–90 BPM Instrumental)</span>
+                        </h3>
+                        <span class="text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-100/80 dark:bg-purple-950/60 px-2.5 py-0.5 rounded-full">60–90 BPM Flow</span>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        Steady 60–90 BPM instrumental beats with zero vocals calm mental noise while keeping the ADHD brain gently engaged.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <button type="button" onclick="playSoundscape('lofi72')" id="sound-card-lofi72" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-purple-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#128251;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">72 BPM Rainy Study Beat</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Warm dusty Rhodes chords, soft vinyl crackle &amp; mellow boom-bap.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('lofi84')" id="sound-card-lofi84" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-purple-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#9749;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">84 BPM Midnight Café</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Upbeat-yet-chill instrumental groove to keep momentum rolling.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('lofi65')" id="sound-card-lofi65" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-purple-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#127769;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">65 BPM Slow-Down Chill</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Slower tape-warped jazz chords for racing thoughts &amp; late study.</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Nature Sounds / Ambient -->
+            <div class="space-y-3">
+                <div class="px-1">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-display font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>&#127807;</span>
+                            <span>4. Nature Sounds / Ambient</span>
+                        </h3>
+                        <span class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">Scientific Reports (2017)</span>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        Shown to enhance parasympathetic ("rest &amp; focus") nervous system activity and outward attention compared to artificial urban noise.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <button type="button" onclick="playSoundscape('rain')" id="sound-card-rain" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-emerald-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#127783;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Steady Cabin Rainfall</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Gentle, consistent rainfall to soften sharp household noises.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('forest')" id="sound-card-forest" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-emerald-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#127794;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Forest Stream &amp; Breeze</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Babbling woodland brook with soft wind rustling through leaves.</p>
+                    </button>
+
+                    <button type="button" onclick="playSoundscape('ocean')" id="sound-card-ocean" class="sound-card text-left p-4 rounded-3xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 hover:border-emerald-400 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xl">&#127754;</span>
+                            <span class="sound-status text-[11px] font-bold px-2 py-0.5 rounded-full bg-cream-100 dark:bg-slate-800 text-slate-500">Play</span>
+                        </div>
+                        <h4 class="font-display font-bold text-sm text-slate-900 dark:text-white">Rhythmic Ocean Waves</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Slow coastal tide swells that naturally pace calm breathing.</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Cloud & Local Storage Persistence Engine -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        async function initCloudSync() {
+            const dotEl = document.getElementById('cloud-sync-dot');
+            const textEl = document.getElementById('cloud-sync-text');
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    if (textEl) textEl.textContent = 'Saved';
+                    return;
+                }
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const stateDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'focusflow_state', 'main');
+                let hasLoadedInitial = false;
+
+                onSnapshot(stateDocRef, (snap) => {
+                    if (snap.exists() && !hasLoadedInitial) {
+                        hasLoadedInitial = true;
+                        const data = snap.data();
+                        if (typeof window.applyCloudState === 'function') {
+                            window.applyCloudState(data);
+                        }
+                    } else if (!snap.exists() && !hasLoadedInitial) {
+                        hasLoadedInitial = true;
+                        if (typeof window.getFocusFlowState === 'function') {
+                            window.persistStateToCloud(window.getFocusFlowState());
+                        }
+                    }
+                    if (dotEl) dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+                    if (textEl) textEl.textContent = 'Saved';
+                }, (err) => {
+                    if (textEl) textEl.textContent = 'Saved';
+                });
+
+                let saveTimer = null;
+                window.persistStateToCloud = function(currentState) {
+                    if (!auth.currentUser) return;
+                    if (textEl) textEl.textContent = 'Saving...';
+                    clearTimeout(saveTimer);
+                    saveTimer = setTimeout(async () => {
+                        try {
+                            await setDoc(stateDocRef, {
+                                currentTab: currentState.currentTab,
+                                darkMode: Boolean(currentState.darkMode),
+                                energyLevel: currentState.energyLevel,
+                                winsToday: Number(currentState.winsToday || 0),
+                                xp: Number(currentState.xp || 0),
+                                streak: Number(currentState.streak || 1),
+                                activeTaskId: currentState.activeTaskId ?? null,
+                                activeTabs: currentState.activeTabs || [],
+                                thoughts: currentState.thoughts || [],
+                                taskBacklog: currentState.taskBacklog || [],
+                                updatedAt: Date.now()
+                            }, { merge: true });
+                            if (dotEl) dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+                            if (textEl) textEl.textContent = 'Saved';
+                        } catch (saveErr) {
+                            if (textEl) textEl.textContent = 'Saved';
+                        }
+                    }, 400);
+                };
+            } catch (err) {
+                if (textEl) textEl.textContent = 'Saved';
+            }
+        }
+
+        initCloudSync();
+    </script>
+
+    <script>
+        // ==========================================
+        // 1. CORE APP STATE, GAMIFICATION & NAVIGATION
+        // ==========================================
+        const STORAGE_KEY = 'focusflow_github_state_v1';
+        const DEFAULT_STATE = {
+            currentTab: 'active',
+            darkMode: false,
+            energyLevel: 'med',
+            winsToday: 0,
+            xp: 15,
+            streak: 1,
+            finalSprintMode: false,
+            timerSeconds: 15 * 60,
+            timerTotalSeconds: 15 * 60,
+            timerRunning: false,
+            activeTaskId: 1,
+            activeTabs: [
+                { id: 1, text: "Open study notes & highlight key headings", done: false },
+                { id: 2, text: "Finish 1 practice problem set", done: false }
+            ],
+            thoughts: [
+                { id: 101, text: "Order replacement water filter cartridge", category: "Buy", createdAt: "Just now" },
+                { id: 102, text: "Look up spaced repetition flashcard apps", category: "Look Up", createdAt: "Earlier" }
+            ],
+            taskBacklog: [
+                { id: 201, text: "Summarize lecture slides into 5 bullet points", effort: "medium" },
+                { id: 202, text: "Reply to advisor email", effort: "quick" },
+                { id: 203, text: "Outline final research paper sections", effort: "deep" }
+            ]
+        };
+
+        function loadInitialState() {
+            const base = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    return { ...base, ...parsed, timerRunning: false };
+                }
+            } catch (e) {}
+            return base;
+        }
+
+        let state = loadInitialState();
+        let lastGeneratedSteps = [];
+        let pendingTabSwitch = null;
+
+        window.getFocusFlowState = function() {
+            return state;
+        };
+
+        window.applyCloudState = function(remoteData) {
+            state = {
+                ...state,
+                currentTab: remoteData.currentTab || state.currentTab,
+                darkMode: typeof remoteData.darkMode === 'boolean' ? remoteData.darkMode : state.darkMode,
+                energyLevel: remoteData.energyLevel || state.energyLevel,
+                winsToday: typeof remoteData.winsToday === 'number' ? remoteData.winsToday : state.winsToday,
+                xp: typeof remoteData.xp === 'number' ? remoteData.xp : state.xp,
+                streak: typeof remoteData.streak === 'number' ? remoteData.streak : state.streak,
+                activeTaskId: remoteData.activeTaskId !== undefined ? remoteData.activeTaskId : state.activeTaskId,
+                activeTabs: Array.isArray(remoteData.activeTabs) ? remoteData.activeTabs : state.activeTabs,
+                thoughts: Array.isArray(remoteData.thoughts) ? remoteData.thoughts : state.thoughts,
+                taskBacklog: Array.isArray(remoteData.taskBacklog) ? remoteData.taskBacklog : state.taskBacklog
+            };
+            document.documentElement.classList.toggle('dark', Boolean(state.darkMode));
+            setEnergy(state.energyLevel || 'med', true);
+            updateGamificationDisplay();
+            renderActiveTabs();
+            renderThoughts();
+            renderBacklog();
+            switchTab(state.currentTab || 'active', true);
+        };
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    currentTab: state.currentTab,
+                    darkMode: state.darkMode,
+                    energyLevel: state.energyLevel,
+                    winsToday: state.winsToday,
+                    xp: state.xp,
+                    streak: state.streak,
+                    activeTaskId: state.activeTaskId,
+                    activeTabs: state.activeTabs,
+                    thoughts: state.thoughts,
+                    taskBacklog: state.taskBacklog
+                }));
+            } catch (e) {}
+            if (typeof window.persistStateToCloud === 'function') {
+                window.persistStateToCloud(state);
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function showToast(message, icon = '&#10024;') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-slate-900 dark:bg-slate-800 text-white text-xs sm:text-sm font-medium shadow-xl border border-slate-700/80 transition-all duration-300';
+            toast.innerHTML = `<span class="text-base">${icon}</span><span>${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function updateGamificationDisplay() {
+            const level = Math.floor(state.xp / 100) + 1;
+            const xpInLevel = state.xp % 100;
+            const levelBadge = document.getElementById('level-badge');
+            const xpBar = document.getElementById('xp-progress-bar');
+            const xpText = document.getElementById('xp-text');
+            const streakPill = document.getElementById('streak-pill');
+            if (levelBadge) levelBadge.textContent = `LVL ${level}`;
+            if (xpBar) xpBar.style.width = `${xpInLevel}%`;
+            if (xpText) xpText.textContent = `${xpInLevel} / 100 XP`;
+            if (streakPill) streakPill.innerHTML = `&#128293; ${state.streak}x`;
+        }
+
+        function awardXP(baseAmount, reason = '') {
+            const multiplier = state.finalSprintMode ? 2 : 1;
+            const earned = baseAmount * multiplier;
+            const oldLevel = Math.floor(state.xp / 100) + 1;
+            state.xp += earned;
+            const newLevel = Math.floor(state.xp / 100) + 1;
+            saveState();
+            updateGamificationDisplay();
+            if (newLevel > oldLevel) {
+                playGentleChime();
+                showToast(`LEVEL UP! You reached Level ${newLevel}! (+${earned} XP)`, '&#127942;');
+            } else if (reason) {
+                showToast(`${reason} (+${earned} XP${multiplier > 1 ? ' 2x!' : ''})`, '&#9889;');
+            }
+        }
+
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            document.documentElement.classList.toggle('dark', state.darkMode);
+            saveState();
+        }
+
+        function setEnergy(level, skipSave = false) {
+            state.energyLevel = level;
+            if (!skipSave) saveState();
+            ['low', 'med', 'high'].forEach(lvl => {
+                const btn = document.getElementById(`energy-${lvl}`);
+                if (!btn) return;
+                if (lvl === level) {
+                    btn.className = 'px-2.5 py-1 rounded-xl text-xs font-bold transition-all bg-calm-100 dark:bg-calm-900/60 text-calm-800 dark:text-calm-200 shadow-sm';
+                } else {
+                    btn.className = 'px-2.5 py-1 rounded-xl text-xs font-medium transition-all text-slate-600 dark:text-slate-300 hover:bg-cream-100 dark:hover:bg-slate-700';
+                }
+            });
+        }
+
+        function requestTabSwitch(targetTab) {
+            if (state.timerRunning && state.currentTab === 'active' && targetTab !== 'active' && targetTab !== 'audio') {
+                pendingTabSwitch = targetTab;
+                const modal = document.getElementById('transition-modal');
+                if (modal) modal.classList.remove('hidden');
+                return;
+            }
+            switchTab(targetTab);
+        }
+
+        function cancelTransition() {
+            pendingTabSwitch = null;
+            const modal = document.getElementById('transition-modal');
+            if (modal) modal.classList.add('hidden');
+            awardXP(10, 'Stayed locked on sprint');
+        }
+
+        function confirmTransition() {
+            const modal = document.getElementById('transition-modal');
+            if (modal) modal.classList.add('hidden');
+            if (pendingTabSwitch) {
+                const dest = pendingTabSwitch;
+                pendingTabSwitch = null;
+                switchTab(dest);
+            }
+        }
+
+        function switchTab(tabName, skipSave = false) {
+            state.currentTab = tabName;
+            if (!skipSave) saveState();
+
+            const panels = ['active', 'thoughts', 'tasks', 'audio'];
+            panels.forEach(p => {
+                const panel = document.getElementById(`panel-${p}`);
+                if (panel) panel.classList.toggle('hidden', p !== tabName);
+
+                const btn = document.getElementById(`tab-btn-${p}`);
+                if (btn) {
+                    if (p === tabName) {
+                        btn.className = 'flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-display font-bold text-sm transition-all bg-calm-100/90 dark:bg-calm-950/80 text-calm-800 dark:text-calm-200 border border-calm-300/70 dark:border-calm-700 shadow-sm';
+                    } else {
+                        btn.className = 'flex items-center justify-center gap-2 py-3 px-3 rounded-2xl font-display font-bold text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-white/70 dark:hover:bg-slate-800';
+                    }
+                }
+
+                const mBtn = document.getElementById(`m-tab-btn-${p}`);
+                if (mBtn) {
+                    if (p === tabName) {
+                        mBtn.className = 'flex flex-col items-center justify-center py-1.5 rounded-xl bg-calm-100 dark:bg-calm-900/70 text-calm-800 dark:text-calm-200 font-bold text-[11px]';
+                    } else {
+                        mBtn.className = 'flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 font-semibold text-[11px]';
+                    }
+                }
+            });
+        }
+
+        function updateTabBadges() {
+            const activeCount = state.activeTabs.filter(t => !t.done).length;
+            const thoughtCount = state.thoughts.length;
+            const taskCount = state.taskBacklog.length;
+
+            const bActive = document.getElementById('badge-active');
+            const bThoughts = document.getElementById('badge-thoughts');
+            const bTasks = document.getElementById('badge-tasks');
+            if (bActive) bActive.textContent = activeCount;
+            if (bThoughts) bThoughts.textContent = thoughtCount;
+            if (bTasks) bTasks.textContent = taskCount;
+
+            const mbActive = document.getElementById('m-badge-active');
+            const mbThoughts = document.getElementById('m-badge-thoughts');
+            const mbTasks = document.getElementById('m-badge-tasks');
+            if (mbActive) mbActive.textContent = activeCount;
+            if (mbThoughts) mbThoughts.textContent = thoughtCount;
+            if (mbTasks) mbTasks.textContent = taskCount;
+        }
+
+        // ==========================================
+        // 2. HANDS-FREE VOICE INPUT (Web Speech API)
+        // ==========================================
+        let activeRecognition = null;
+        let activeMicBtn = null;
+
+        function startVoiceInput(targetInputId, btnEl, autoSubmit = false) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast('Voice typing is not supported in this browser — type directly!', '&#127897;');
+                const input = document.getElementById(targetInputId);
+                if (input) input.focus();
+                return;
+            }
+
+            if (activeRecognition) {
+                try { activeRecognition.stop(); } catch (e) {}
+                activeRecognition = null;
+                if (activeMicBtn) activeMicBtn.classList.remove('mic-recording');
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+
+            activeRecognition = recognition;
+            activeMicBtn = btnEl;
+            if (btnEl) btnEl.classList.add('mic-recording');
+            showToast('Listening... speak your thought now!', '&#127897;');
+
+            const inputEl = document.getElementById(targetInputId);
+            let finalTranscript = '';
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+                if (inputEl) {
+                    inputEl.value = (finalTranscript || interim).trim();
+                }
+            };
+
+            recognition.onerror = () => {
+                if (btnEl) btnEl.classList.remove('mic-recording');
+                activeRecognition = null;
+                showToast('Could not hear voice clearly — try tapping mic again.', '&#127897;');
+            };
+
+            recognition.onend = () => {
+                if (btnEl) btnEl.classList.remove('mic-recording');
+                activeRecognition = null;
+                if (inputEl && inputEl.value.trim()) {
+                    awardXP(5, 'Voice capture');
+                    if (autoSubmit && targetInputId === 'thought-input') {
+                        addThought();
+                    }
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                if (btnEl) btnEl.classList.remove('mic-recording');
+            }
+        }
+
+        // ==========================================
+        // 3. FOCUS SPRINT TIMER & FINAL 10% BOSS MODE
+        // ==========================================
+        let timerInterval = null;
+        const RING_CIRCUMFERENCE = 326.7256;
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(state.timerSeconds / 60);
+            const secs = state.timerSeconds % 60;
+            const display = document.getElementById('timer-display');
+            if (display) {
+                display.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            const ring = document.getElementById('timer-progress-ring');
+            if (ring && state.timerTotalSeconds > 0) {
+                const progress = state.timerSeconds / state.timerTotalSeconds;
+                const offset = RING_CIRCUMFERENCE * (1 - progress);
+                ring.style.strokeDashoffset = offset;
+            }
+
+            const rewardBadge = document.getElementById('sprint-reward-badge');
+            const modeLabel = document.getElementById('timer-mode-label');
+            if (state.finalSprintMode) {
+                if (modeLabel) modeLabel.textContent = 'FINAL 10% BOSS';
+                if (rewardBadge) rewardBadge.textContent = '+100 XP (2x BOOST!)';
+            } else {
+                if (modeLabel) modeLabel.textContent = 'Focus Sprint';
+                const xpReward = Math.max(20, Math.round((state.timerTotalSeconds / 60) * 3.5));
+                if (rewardBadge) rewardBadge.textContent = `+${xpReward} XP on finish`;
+            }
+        }
+
+        function setTimerMinutes(mins) {
+            pauseTimer();
+            state.finalSprintMode = false;
+            state.timerTotalSeconds = mins * 60;
+            state.timerSeconds = mins * 60;
+            updateTimerDisplay();
+            showToast(`Timer set to ${mins} minutes`, '&#9201;');
+        }
+
+        function activateFinalSprint() {
+            pauseTimer();
+            state.finalSprintMode = true;
+            state.timerTotalSeconds = 5 * 60;
+            state.timerSeconds = 5 * 60;
+            updateTimerDisplay();
+            toggleTimer();
+            showToast('FINAL 10% BOSS SPRINT! Finish in 5 mins for 2x XP!', '&#127937;');
+        }
+
+        function toggleTimer() {
+            if (state.timerRunning) {
+                pauseTimer();
+            } else {
+                state.timerRunning = true;
+                const icon = document.getElementById('timer-toggle-icon');
+                const text = document.getElementById('timer-toggle-text');
+                if (icon) icon.innerHTML = '&#9208;';
+                if (text) text.textContent = 'Pause';
+
+                timerInterval = setInterval(() => {
+                    if (state.timerSeconds > 0) {
+                        state.timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        pauseTimer();
+                        playGentleChime();
+                        state.streak = Math.min(5, state.streak + 1);
+                        const baseXP = Math.max(25, Math.round((state.timerTotalSeconds / 60) * 3.5));
+                        awardXP(baseXP, 'Sprint Complete!');
+                        state.finalSprintMode = false;
+                        state.timerSeconds = state.timerTotalSeconds;
+                        updateTimerDisplay();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            state.timerRunning = false;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            const icon = document.getElementById('timer-toggle-icon');
+            const text = document.getElementById('timer-toggle-text');
+            if (icon) icon.innerHTML = '&#9654;';
+            if (text) text.textContent = 'Start Sprint';
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            state.finalSprintMode = false;
+            state.timerSeconds = state.timerTotalSeconds;
+            updateTimerDisplay();
+        }
+
+        function playGentleChime() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523.25, 659.25, 783.99];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.001, ctx.currentTime + i * 0.14);
+                    gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + i * 0.14 + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.14 + 0.7);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + i * 0.14);
+                    osc.stop(ctx.currentTime + i * 0.14 + 0.75);
+                });
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // 4. OPEN TABS (MAX 3) & ACTIVE FOCUS ANCHOR
+        // ==========================================
+        function updateActiveFocusAnchor() {
+            const titleEl = document.getElementById('active-task-title');
+            const subEl = document.getElementById('active-task-subtitle');
+            const current = state.activeTabs.find(t => t.id === state.activeTaskId && !t.done) || state.activeTabs.find(t => !t.done);
+
+            if (current) {
+                state.activeTaskId = current.id;
+                if (titleEl) titleEl.textContent = current.text;
+                if (subEl) subEl.textContent = state.finalSprintMode
+                    ? 'Final 10% push — cross the finish line before the clock hits zero!'
+                    : 'Locked in! Stay with just this one item until the timer chimes.';
+            } else {
+                state.activeTaskId = null;
+                if (titleEl) titleEl.textContent = 'All active tabs cleared!';
+                if (subEl) subEl.textContent = 'Add a tiny starter step below or pull 1 task from your Task List.';
+            }
+        }
+
+        function renderActiveTabs() {
+            const list = document.getElementById('active-tabs-list');
+            const counter = document.getElementById('tab-limit-counter');
+            if (!list) return;
+
+            const openCount = state.activeTabs.filter(t => !t.done).length;
+            if (counter) counter.textContent = `${openCount} / 3 slots`;
+
+            if (state.activeTabs.length === 0) {
+                list.innerHTML = `<div class="p-4 rounded-2xl bg-white/70 dark:bg-slate-800/50 border border-dashed border-calm-300/80 dark:border-slate-700 text-xs text-slate-500 text-center">No open tabs yet. Add 1 tiny action above!</div>`;
+                updateActiveFocusAnchor();
+                updateTabBadges();
+                return;
+            }
+
+            list.innerHTML = state.activeTabs.map(tab => {
+                const isFocused = tab.id === state.activeTaskId && !tab.done;
+                return `
+                    <div class="flex items-center justify-between gap-2.5 p-3 rounded-2xl border transition ${
+                        isFocused
+                            ? 'bg-calm-100/90 dark:bg-calm-900/50 border-calm-400 dark:border-calm-600 shadow-sm'
+                            : 'bg-white/90 dark:bg-slate-800/80 border-cream-200 dark:border-slate-700'
+                    }">
+                        <button type="button" onclick="toggleActiveTabDone(${tab.id})" class="flex items-center gap-2.5 text-left flex-1 min-w-0">
+                            <span class="w-5 h-5 rounded-lg flex items-center justify-center border text-xs font-bold flex-shrink-0 ${
+                                tab.done
+                                    ? 'bg-emerald-500 border-emerald-500 text-white'
+                                    : 'border-calm-400 text-transparent'
+                            }">&#10003;</span>
+                            <span class="text-sm font-medium truncate ${tab.done ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-100'}">${escapeHtml(tab.text)}</span>
+                        </button>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            ${!tab.done && !isFocused ? `<button type="button" onclick="focusSpecificTab(${tab.id})" title="Set as Focus Anchor" class="px-2 py-1 rounded-lg bg-calm-100 hover:bg-calm-200 dark:bg-slate-700 text-calm-800 dark:text-calm-200 text-[11px] font-bold">Focus</button>` : ''}
+                            <button type="button" onclick="removeActiveTab(${tab.id})" aria-label="Remove tab" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 text-xs">&#10005;</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateActiveFocusAnchor();
+            updateTabBadges();
+        }
+
+        function addActiveTab(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('new-active-tab-input');
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            const openCount = state.activeTabs.filter(t => !t.done).length;
+            if (openCount >= 3) {
+                showToast('Max 3 open tabs! Finish or park one first to avoid overwhelm.', '&#128721;');
+                return;
+            }
+
+            const newItem = { id: Date.now(), text, done: false };
+            state.activeTabs.unshift(newItem);
+            state.activeTaskId = newItem.id;
+            input.value = '';
+            saveState();
+            renderActiveTabs();
+            showToast('Added to Active Focus!', '&#127919;');
+        }
+
+        function focusSpecificTab(id) {
+            state.activeTaskId = id;
+            saveState();
+            renderActiveTabs();
+            showToast('Focus anchor updated!', '&#127919;');
+        }
+
+        function toggleActiveTabDone(id) {
+            const tab = state.activeTabs.find(t => t.id === id);
+            if (!tab) return;
+            tab.done = !tab.done;
+            if (tab.done) {
+                state.winsToday++;
+                playGentleChime();
+                awardXP(30, 'Task completed!');
+            }
+            saveState();
+            renderActiveTabs();
+        }
+
+        function completeCurrentActiveTask() {
+            const current = state.activeTabs.find(t => t.id === state.activeTaskId && !t.done) || state.activeTabs.find(t => !t.done);
+            if (!current) {
+                awardXP(20, 'Focus block completed!');
+                return;
+            }
+            toggleActiveTabDone(current.id);
+        }
+
+        function removeActiveTab(id) {
+            state.activeTabs = state.activeTabs.filter(t => t.id !== id);
+            saveState();
+            renderActiveTabs();
+        }
+
+        // ==========================================
+        // 5. TASK PARALYSIS BUSTER (2-MINUTE STEPS)
+        // ==========================================
+        function breakDownTaskWithAI() {
+            const input = document.getElementById('shrink-task-input');
+            const container = document.getElementById('shrink-results-container');
+            const footer = document.getElementById('shrink-actions-footer');
+            if (!input || !container) return;
+
+            const raw = input.value.trim() || 'Start my current task';
+            lastGeneratedSteps = [
+                `Open the exact file/page needed for "${raw}" (30 sec)`,
+                `Set a 5-min starter timer & do just the first tiny piece of "${raw}"`,
+                `Review what you wrote & celebrate progress (+XP)`
+            ];
+
+            container.innerHTML = lastGeneratedSteps.map((step, idx) => `
+                <div class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-calm-200 dark:border-calm-800 flex items-start gap-2.5 text-xs">
+                    <span class="w-5 h-5 rounded-full bg-calm-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">${idx + 1}</span>
+                    <span class="text-slate-700 dark:text-slate-200 font-medium leading-relaxed">${escapeHtml(step)}</span>
+                </div>
+            `).join('');
+
+            if (footer) footer.classList.remove('hidden');
+            awardXP(10, 'Shrank scary task');
+        }
+
+        function sendStepsToActive() {
+            if (!lastGeneratedSteps.length) return;
+            const openCount = state.activeTabs.filter(t => !t.done).length;
+            if (openCount >= 3) {
+                showToast('Clear 1 open tab first so you stay under 3!', '&#128721;');
+                return;
+            }
+            const newItem = { id: Date.now(), text: lastGeneratedSteps[0], done: false };
+            state.activeTabs.unshift(newItem);
+            state.activeTaskId = newItem.id;
+            saveState();
+            renderActiveTabs();
+            showToast('Step 1 loaded into your Focus Anchor!', '&#128640;');
+        }
+
+        // ==========================================
+        // 6. RANDOM THOUGHTS PARKING LOT & AUTO-GROUP
+        // ==========================================
+        function classifyThought(text) {
+            const lower = text.toLowerCase();
+            if (/\b(buy|order|amazon|grocer|cart|shop|get some|need to get)\b/.test(lower)) return 'Buy';
+            if (/\b(look up|search|google|check|what is|how to|watch|read)\b/.test(lower)) return 'Look Up';
+            if (/\b(call|email|text|reply|send|pay|book|schedule|fix|clean)\b/.test(lower)) return 'Action';
+            return 'Idea';
+        }
+
+        function renderThoughts() {
+            const grid = document.getElementById('thoughts-grid');
+            if (!grid) return;
+
+            if (state.thoughts.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-8 rounded-3xl bg-white dark:bg-slate-900 border border-dashed border-fuchsia-300 dark:border-fuchsia-800 text-center text-sm text-slate-500">Your parking lot is clear! Tap the mic above whenever a random thought pops up.</div>`;
+                updateTabBadges();
+                return;
+            }
+
+            const badgeStyles = {
+                'Buy': 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+                'Look Up': 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300',
+                'Action': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+                'Idea': 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-950 dark:text-fuchsia-300'
+            };
+
+            grid.innerHTML = state.thoughts.map(item => {
+                const cat = item.category || classifyThought(item.text);
+                const pillClass = badgeStyles[cat] || badgeStyles['Idea'];
+                return `
+                    <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-fuchsia-200/70 dark:border-fuchsia-900/50 shadow-sm flex flex-col justify-between gap-3">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${pillClass}">${escapeHtml(cat)}</span>
+                                <span class="text-[11px] text-slate-400">${escapeHtml(item.createdAt || 'Parked')}</span>
+                            </div>
+                            <p class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-snug">${escapeHtml(item.text)}</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <button type="button" onclick="promoteThoughtToTask(${item.id})" class="text-xs font-bold text-purple-600 dark:text-purple-300 hover:underline">+ Move to Tasks</button>
+                            <button type="button" onclick="removeThought(${item.id})" class="text-xs text-slate-400 hover:text-rose-500">Dismiss</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateTabBadges();
+        }
+
+        function addThought(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('thought-input');
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            state.thoughts.unshift({
+                id: Date.now(),
+                text,
+                category: classifyThought(text),
+                createdAt: 'Just now'
+            });
+            input.value = '';
+            saveState();
+            renderThoughts();
+            awardXP(5, 'Parked distraction');
+        }
+
+        function autoGroupThoughtsWithAI() {
+            const order = { 'Action': 1, 'Buy': 2, 'Look Up': 3, 'Idea': 4 };
+            state.thoughts = state.thoughts.map(t => ({
+                ...t,
+                category: classifyThought(t.text)
+            })).sort((a, b) => (order[a.category] || 9) - (order[b.category] || 9));
+            saveState();
+            renderThoughts();
+            showToast('Thoughts sorted into Action, Buy, Look Up & Idea!', '&#129668;');
+        }
+
+        function promoteThoughtToTask(id) {
+            const thought = state.thoughts.find(t => t.id === id);
+            if (!thought) return;
+            state.taskBacklog.unshift({
+                id: Date.now(),
+                text: thought.text,
+                effort: 'quick'
+            });
+            state.thoughts = state.thoughts.filter(t => t.id !== id);
+            saveState();
+            renderThoughts();
+            renderBacklog();
+            showToast('Moved to your Task List Vault!', '&#128203;');
+        }
+
+        function removeThought(id) {
+            state.thoughts = state.thoughts.filter(t => t.id !== id);
+            saveState();
+            renderThoughts();
+        }
+
+        function clearAllThoughts() {
+            state.thoughts = [];
+            saveState();
+            renderThoughts();
+            showToast('Parking lot cleared!', '&#129529;');
+        }
+
+        // ==========================================
+        // 7. TASK LIST VAULT (NAVY & GOLD)
+        // ==========================================
+        let currentBacklogFilter = 'all';
+
+        function filterBacklog(filter) {
+            currentBacklogFilter = filter;
+            ['all', 'quick', 'medium', 'deep'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (!btn) return;
+                if (f === filter) {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-navy-900 text-gold-300 border border-gold-500/40';
+                } else {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
+                }
+            });
+            renderBacklog();
+        }
+
+        function renderBacklog() {
+            const list = do
