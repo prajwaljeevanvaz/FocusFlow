@@ -164,14 +164,17 @@ tailwind.config={darkMode:'class',theme:{extend:{colors:{cream:{50:'#fdfbf6',100
 </div>
 
 <div class="rounded-3xl bg-white dark:bg-slate-900 border border-calm-200 dark:border-slate-800 p-5 shadow-sm">
-<h3 class="font-bold text-base mb-2">&#129668; Task Paralysis Buster</h3>
-<p class="text-xs text-slate-500 mb-3">Shrink any overwhelming task into 3 tiny 2-minute steps.</p>
-<div class="flex gap-2 mb-3">
-<input type="text" id="shrink-task-input" placeholder="e.g., Study chapter 4" class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-cream-50 dark:bg-slate-800 border text-sm">
-<button type="button" id="shrink-btn" class="px-4 py-2 rounded-xl bg-calm-600 text-white font-bold text-sm">Shrink It</button>
+<div class="flex items-center justify-between mb-1">
+<h3 class="font-bold text-base">&#129668; Task Paralysis Buster</h3>
+<button type="button" id="btn-shrink-current" class="text-[11px] font-bold text-calm-700 dark:text-calm-300 underline">Shrink Current Focus</button>
 </div>
-<div id="shrink-results-container" class="space-y-2 text-xs text-slate-500">Your 3 tiny starter steps appear here.</div>
-<button type="button" id="btn-send-steps-active" class="hidden mt-3 text-xs font-bold text-calm-700 underline">+ Load Step 1 into Focus</button>
+<p class="text-xs text-slate-500 mb-3">Type any big task (or leave blank to shrink your current focus task) into 3 micro-steps.</p>
+<form id="form-shrink-task" class="flex gap-2 mb-3">
+<input type="text" id="shrink-task-input" placeholder="e.g., Study chapter 4 or clean room" class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-cream-50 dark:bg-slate-800 border text-sm">
+<button type="button" data-voice-target="shrink-task-input" class="voice-btn px-3 py-2 rounded-xl bg-calm-100 dark:bg-slate-800 text-sm">&#127897;</button>
+<button type="submit" id="shrink-btn" class="px-4 py-2 rounded-xl bg-calm-600 text-white font-bold text-sm">Shrink It</button>
+</form>
+<div id="shrink-results-container" class="space-y-2 text-xs text-slate-500">Tap "Shrink It" to break any overwhelming task into 3 gentle 2-minute steps.</div>
 </div></div>
 </section>
 
@@ -223,6 +226,8 @@ tailwind.config={darkMode:'class',theme:{extend:{colors:{cream:{50:'#fdfbf6',100
 <button type="button" id="stop-all-audio-btn" class="hidden px-3 py-2 rounded-xl bg-rose-100 text-rose-700 font-bold text-xs">&#9209; Stop</button>
 </div></div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<button type="button" data-sound="hz528" id="sound-card-hz528" class="sound-card text-left p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 shadow-sm"><div class="font-bold text-sm">&#10024; 528 Hz Clarity &amp; Calm Frequency</div><div class="text-xs text-slate-600 dark:text-slate-300">Warm 528 Hz harmonic resonance + soft cushion</div></button>
+<button type="button" data-sound="hz857" id="sound-card-hz857" class="sound-card text-left p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-300 dark:border-indigo-800 shadow-sm"><div class="font-bold text-sm">&#128302; 857 Hz Deep Focus &amp; Intuition</div><div class="text-xs text-slate-600 dark:text-slate-300">Pure 857 Hz carrier + gentle sub-octave hum</div></button>
 <button type="button" data-sound="brown40" id="sound-card-brown40" class="sound-card text-left p-4 rounded-2xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 shadow-sm"><div class="font-bold text-sm">&#128996; Deep Brown Noise (40–60Hz)</div><div class="text-xs text-slate-500">Low rumble to quiet racing thoughts</div></button>
 <button type="button" data-sound="brownGamma" id="sound-card-brownGamma" class="sound-card text-left p-4 rounded-2xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 shadow-sm"><div class="font-bold text-sm">&#9889; Brown Noise + 40Hz Focus Pulse</div><div class="text-xs text-slate-500">Gamma focus tone + warm brown noise</div></button>
 <button type="button" data-sound="vgmSaveRoom" id="sound-card-vgmSaveRoom" class="sound-card text-left p-4 rounded-2xl bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 shadow-sm"><div class="font-bold text-sm">&#127918; Video Game Save Room</div><div class="text-xs text-slate-500">Calm RPG checkpoint chords</div></button>
@@ -326,21 +331,26 @@ return '<div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-s
 
 // Audio + Sensory
 var actx=null,mgain=null,curSnd=null,sndClean=null,vol=0.65,sMode='mop',sAnim=null,mopP=0;
-function stopSnd(){if(sndClean){try{sndClean();}catch(e){}}sndClean=null;curSnd=null;document.getElementById('audio-now-playing-title').textContent='No Sound Playing';document.getElementById('stop-all-audio-btn').classList.add('hidden');document.getElementById('audio-toggle-btn').innerHTML='&#128263; Brown Noise';document.getElementById('badge-audio').textContent='Audio';document.getElementById('sensory-video-panel').classList.add('hidden');if(sAnim)cancelAnimationFrame(sAnim);}
+var sndNames={hz528:'528 Hz Clarity & Calm Frequency',hz857:'857 Hz Deep Focus & Intuition',brown40:'Deep Brown Noise (40–60Hz)',brownGamma:'Brown Noise + 40Hz Pulse',vgmSaveRoom:'Video Game Save Room',vgmOverworld:'Peaceful Overworld Synth',lofi72:'72 BPM Lo-Fi Study Beat',lofi84:'84 BPM Midnight Café Lo-Fi',rain:'Steady Cabin Rainfall',ocean:'Rhythmic Ocean Waves'};
+function stopSnd(){if(sndClean){try{sndClean();}catch(e){}}sndClean=null;curSnd=null;document.getElementById('audio-now-playing-title').textContent='No Sound Playing';document.getElementById('stop-all-audio-btn').classList.add('hidden');document.getElementById('audio-toggle-btn').innerHTML='&#128263; Brown Noise';document.getElementById('badge-audio').textContent='Audio';document.getElementById('sensory-video-panel').classList.add('hidden');document.querySelectorAll('.sound-card').forEach(function(c){c.classList.remove('ring-2','ring-calm-500');});if(sAnim)cancelAnimationFrame(sAnim);}
 function playSnd(id){
 if(curSnd===id){stopSnd();return;}
 stopSnd();
 if(!actx){actx=new(window.AudioContext||window.webkitAudioContext)();mgain=actx.createGain();mgain.gain.value=vol;mgain.connect(actx.destination);}
 if(actx.state==='suspended')actx.resume();
 curSnd=id;var nodes=[],ivs=[];
+var card=document.getElementById('sound-card-'+id);if(card)card.classList.add('ring-2','ring-calm-500');
 function noise(hz,g){var len=actx.sampleRate*4,buf=actx.createBuffer(1,len,actx.sampleRate),out=buf.getChannelData(0),last=0;for(var i=0;i<len;i++){var w=Math.random()*2-1;out[i]=(last+.02*w)/1.02;last=out[i];out[i]*=3;}var src=actx.createBufferSource();src.buffer=buf;src.loop=true;var flt=actx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=hz;var gn=actx.createGain();gn.gain.value=g;src.connect(flt);flt.connect(gn);gn.connect(mgain);src.start();nodes.push(src);return gn;}
-if(id==='brown40')noise(160,.65);
-else if(id==='brownGamma'){noise(150,.55);var o=actx.createOscillator(),g=actx.createGain();o.frequency.value=40;g.gain.value=.08;o.connect(g);g.connect(mgain);o.start();nodes.push(o);}
+function tone(hz,type,g){var o=actx.createOscillator(),gn=actx.createGain();o.type=type;o.frequency.value=hz;gn.gain.value=g;o.connect(gn);gn.connect(mgain);o.start();nodes.push(o);return gn;}
+if(id==='hz528'){tone(528,'sine',.14);tone(264,'sine',.07);noise(140,.12);}
+else if(id==='hz857'){tone(857,'sine',.11);tone(428.5,'sine',.06);noise(140,.12);}
+else if(id==='brown40')noise(160,.65);
+else if(id==='brownGamma'){noise(150,.55);tone(40,'sine',.08);}
 else if(id==='rain')noise(950,.35);
 else if(id==='ocean'){var gn=noise(380,.25),ph=0;ivs.push(setInterval(function(){ph+=.15;gn.gain.setTargetAtTime(.22+(Math.sin(ph)+1)*.18,actx.currentTime,.4);},500));}
-else{noise(650,.08);var chords=[[261.6,329.6,392],[220,261.6,329.6],[196,246.9,293.7]],ci=0;function ch(){chords[ci++%chords.length].forEach(function(f){var o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.04,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0005,actx.currentTime+2.6);o.connect(g);g.connect(mgain);o.start();o.stop(actx.currentTime+2.7);});}ch();ivs.push(setInterval(ch,2800));}
+else{noise(650,.08);var chords=[[261.6,329.6,392],[220,261.6,329.6],[196,246.9,293.7]],ci=0;function ch(){chords[ci++%chords.length].forEach(function(f){var o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.04,actx.currentTime);g.gain.exponentialRampToValueAtTime(.0005,actx.currentTime+2.6);o.connect(g);g.connect(mgain);o.start();o.stop(actx.currentTime+2.7);});}ch();ivs.push(setInterval(ch,2800));}
 sndClean=function(){ivs.forEach(clearInterval);nodes.forEach(function(n){try{n.stop();}catch(e){}});};
-document.getElementById('audio-now-playing-title').textContent='Playing Focus Audio';document.getElementById('stop-all-audio-btn').classList.remove('hidden');document.getElementById('audio-toggle-btn').innerHTML='&#128266; Pause Audio';document.getElementById('badge-audio').textContent='On';
+document.getElementById('audio-now-playing-title').textContent='Playing: '+(sndNames[id]||'Focus Audio');document.getElementById('stop-all-audio-btn').classList.remove('hidden');document.getElementById('audio-toggle-btn').innerHTML='&#128266; Pause Audio';document.getElementById('badge-audio').textContent='On';
 var sp=document.getElementById('sensory-video-panel');sp.classList.remove('hidden');var cv=document.getElementById('sensory-canvas');cv.width=cv.parentElement.clientWidth||500;cv.height=144;var cx=cv.getContext('2d'),tm=0;
 function loop(){var w=cv.width,h=cv.height;cx.clearRect(0,0,w,h);tm+=.03;if(sMode==='mop'){cx.fillStyle='#e7dcc8';cx.fillRect(0,0,w,h);mopP=(mopP+.005)%1;var r=Math.floor(mopP*4),f=(mopP*4)-r,rh=h/4;cx.fillStyle='rgba(186,224,253,.6)';cx.fillRect(0,0,w,r*rh);var mx=(r%2===0?f:1-f)*w;cx.fillRect(r%2===0?0:mx,r*rh,r%2===0?mx:w-mx,rh);cx.fillStyle='#376fa3';cx.fillRect(mx-15,r*rh+3,30,rh-6);}else if(sMode==='wash'){cx.fillStyle='#cbd5e1';cx.fillRect(0,0,w,h);mopP=(mopP+.006)%1;cx.fillStyle='#f0f7ff';cx.fillRect(0,0,mopP*w,h);}else if(sMode==='rain'){cx.fillStyle='#1e3f5e';cx.fillRect(0,0,w,h);cx.fillStyle='#bae0fd';for(var i=0;i<25;i++){cx.fillRect((i*47)%w,((i*31+tm*180)%h),2,10);}}else{cx.fillStyle='#f0f7ff';cx.fillRect(0,0,w,h);cx.fillStyle='rgba(55,111,163,.25)';cx.beginPath();cx.moveTo(0,h);for(var x=0;x<=w;x+=15)cx.lineTo(x,h*.55+Math.sin(x*.02+tm)*16);cx.lineTo(w,h);cx.fill();}sAnim=requestAnimationFrame(loop);}
 loop();
@@ -368,9 +378,72 @@ document.getElementById('btn-dopa-spin').addEventListener('click',function(){var
 document.getElementById('form-add-active-tab').addEventListener('submit',function(e){e.preventDefault();var inp=document.getElementById('new-active-tab-input'),txt=inp.value.trim();if(!txt)return;if(state.activeTabs.filter(function(t){return !t.done;}).length>=3){toast('Max 3 open tabs!');return;}var it={id:Date.now(),text:txt,done:false};state.activeTabs.unshift(it);state.activeTaskId=it.id;inp.value='';save();renderActive();});
 document.getElementById('active-tabs-list').addEventListener('click',function(e){var b=e.target.closest('button[data-act]');if(!b)return;var a=b.getAttribute('data-act'),id=Number(b.getAttribute('data-id'));if(a==='tog'){var t=state.activeTabs.find(function(x){return x.id===id;});if(t){t.done=!t.done;if(t.done){chime();addXP(30,'Task done!');}}}else if(a==='foc'){state.activeTaskId=id;}else if(a==='del'){state.activeTabs=state.activeTabs.filter(function(x){return x.id!==id;});}save();renderActive();});
 
+// Smart Task Paralysis Buster
 var lastSteps=[];
-document.getElementById('shrink-btn').addEventListener('click',function(){var raw=document.getElementById('shrink-task-input').value.trim()||'my task';lastSteps=['1. Open page/file for "'+raw+'" (30s)','2. Set 5m timer & do first tiny piece of "'+raw+'"','3. Celebrate progress (+XP)'];document.getElementById('shrink-results-container').innerHTML=lastSteps.map(function(s){return '<div class="p-2.5 rounded-xl bg-calm-50 dark:bg-slate-800 font-medium text-slate-800 dark:text-slate-100">'+esc(s)+'</div>';}).join('');document.getElementById('btn-send-steps-active').classList.remove('hidden');addXP(10,'Shrank task');});
-document.getElementById('btn-send-steps-active').addEventListener('click',function(){if(!lastSteps.length)return;if(state.activeTabs.filter(function(t){return !t.done;}).length>=3){toast('Clear 1 open tab first!');return;}var it={id:Date.now(),text:lastSteps[0],done:false};state.activeTabs.unshift(it);state.activeTaskId=it.id;save();renderActive();toast('Loaded Step 1!');});
+function generateMicroSteps(raw){
+var l=raw.toLowerCase();
+if(/study|read|note|chapter|exam|revise|learn/.test(l)){
+return [
+'Open notes/book for "'+raw+'" & read just the headings (60s)',
+'Set a 5-min timer & summarize 3 key points of "'+raw+'"',
+'Test yourself on 1 concept from "'+raw+'" (+XP)'
+];
+}
+if(/write|essay|report|email|reply|message|draft/.test(l)){
+return [
+'Open a blank page/draft for "'+raw+'" & type a messy title (30s)',
+'Write 3 rough bullet points for "'+raw+'" without editing',
+'Turn bullet #1 into 2 real sentences for "'+raw+'"'
+];
+}
+if(/clean|tidy|room|desk|laundry|wash|organize/.test(l)){
+return [
+'Grab a trash bag/basket & clear 5 obvious items for "'+raw+'"',
+'Put on 1 hype song & do a 3-minute speed pass on "'+raw+'"',
+'Stop when the song ends & enjoy the visible win (+XP)'
+];
+}
+if(/code|app|fix|build|project|work/.test(l)){
+return [
+'Open the exact file/tab needed for "'+raw+'" (30s)',
+'Write or test just the smallest 5-minute piece of "'+raw+'"',
+'Save progress & check off this micro-sprint (+XP)'
+];
+}
+return [
+'Set up the workspace/tab for "'+raw+'" (30 seconds)',
+'Do just the first 2-minute starter action on "'+raw+'"',
+'Pause, celebrate momentum, or continue for 5 more mins'
+];
+}
+function runShrink(customText){
+var inp=document.getElementById('shrink-task-input');
+var cur=state.activeTabs.find(function(t){return t.id===state.activeTaskId&&!t.done;});
+var raw=(customText||inp.value.trim()||(cur?cur.text:'my task')).trim();
+inp.value=raw;
+lastSteps=generateMicroSteps(raw);
+document.getElementById('shrink-results-container').innerHTML=lastSteps.map(function(s,idx){
+return '<div class="p-2.5 rounded-xl bg-calm-50 dark:bg-slate-800 border border-calm-200 dark:border-slate-700 flex items-center justify-between gap-2">'+
+'<span class="font-medium text-slate-800 dark:text-slate-100">'+(idx+1)+'. '+esc(s)+'</span>'+
+'<button type="button" data-step-idx="'+idx+'" class="load-step-btn flex-shrink-0 px-2.5 py-1 rounded-lg bg-calm-600 text-white text-[11px] font-bold">+ Focus</button>'+
+'</div>';
+}).join('');
+addXP(10,'Shrank task into 3 steps');
+}
+document.getElementById('form-shrink-task').addEventListener('submit',function(e){e.preventDefault();runShrink();});
+document.getElementById('btn-shrink-current').addEventListener('click',function(){
+var cur=state.activeTabs.find(function(t){return t.id===state.activeTaskId&&!t.done;});
+runShrink(cur?cur.text:'');
+});
+document.getElementById('shrink-results-container').addEventListener('click',function(e){
+var b=e.target.closest('button.load-step-btn');if(!b)return;
+var idx=Number(b.getAttribute('data-step-idx'));
+var stepText=lastSteps[idx];if(!stepText)return;
+if(state.activeTabs.filter(function(t){return !t.done;}).length>=3){toast('Clear 1 open tab first (max 3)!');return;}
+var it={id:Date.now(),text:stepText,done:false};
+state.activeTabs.unshift(it);state.activeTaskId=it.id;
+save();renderActive();toast('Loaded Step '+(idx+1)+' into Focus!');
+});
 
 document.getElementById('form-add-thought').addEventListener('submit',function(e){e.preventDefault();var inp=document.getElementById('thought-input'),txt=inp.value.trim();if(!txt)return;state.thoughts.unshift({id:Date.now(),text:txt,category:catThought(txt)});inp.value='';save();renderThoughts();addXP(5,'Parked thought');});
 document.getElementById('ai-group-thoughts-btn').addEventListener('click',function(){state.thoughts.forEach(function(t){t.category=catThought(t.text);});state.thoughts.sort(function(a,b){return a.category.localeCompare(b.category);});save();renderThoughts();toast('Grouped thoughts!');});
