@@ -36,7 +36,7 @@
                     const manifest = {
                         name: 'FocusFlow — ADHD Companion',
                         short_name: 'FocusFlow',
-                        description: 'Gamified, voice-enabled ADHD focus timer, task shrinker, and sensory audio companion.',
+                        description: 'Gamified, voice-enabled ADHD focus timer, dopamine menu, task shrinker, and sensory audio companion.',
                         start_url: '.',
                         display: 'standalone',
                         background_color: '#fdfbf6',
@@ -391,6 +391,80 @@
                 </div>
             </div>
 
+            <!-- INSTANT DOPAMINE HITS MENU (Zero-Scroll Micro-Boosters) -->
+            <div class="card-fallback rounded-3xl bg-gradient-to-r from-amber-50/90 via-cream-50 to-calm-50/90 dark:from-amber-950/30 dark:via-slate-900 dark:to-calm-950/30 border border-amber-200/90 dark:border-amber-800/60 p-5 sm:p-6 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>&#9889;</span>
+                            <span>Dopamine Hits (2-Min Brain Sparks)</span>
+                        </h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Low dopamine? Tap a safe 2-minute micro-boost instead of doomscrolling — earn +15 XP &amp; jump back in!
+                        </p>
+                    </div>
+                    <span id="dopamine-active-banner" class="hidden px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-extrabold shadow-sm animate-pulse">
+                        &#9201; Boost Active: <span id="dopamine-timer-text">02:00</span>
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    <button type="button" onclick="triggerDopamineHit('Cold Water Splash & Sip', 120, '&#128167;')" class="text-left p-3 rounded-2xl bg-white/95 dark:bg-slate-800/90 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-200/80 dark:border-slate-700 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-lg">&#128167;</span>
+                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">+15 XP</span>
+                        </div>
+                        <div class="font-display font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Cold Water Reset</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">2m • Instant nervous reset</div>
+                    </button>
+
+                    <button type="button" onclick="triggerDopamineHit('60-Sec Shake & Stretch', 60, '&#129336;')" class="text-left p-3 rounded-2xl bg-white/95 dark:bg-slate-800/90 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-200/80 dark:border-slate-700 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-lg">&#129336;</span>
+                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">+15 XP</span>
+                        </div>
+                        <div class="font-display font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Shake &amp; Stretch</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">1m • Wake up stuck body</div>
+                    </button>
+
+                    <button type="button" onclick="triggerDopamineHit('1 Hype Song Dance Break', 180, '&#127925;')" class="text-left p-3 rounded-2xl bg-white/95 dark:bg-slate-800/90 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-200/80 dark:border-slate-700 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-lg">&#127925;</span>
+                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">+15 XP</span>
+                        </div>
+                        <div class="font-display font-bold text-xs sm:text-sm text-slate-900 dark:text-white">1-Song Hype Break</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">3m • Fast dopamine surge</div>
+                    </button>
+
+                    <button type="button" onclick="triggerDopamineHit('5-Item Desk Clear', 90, '&#10024;')" class="text-left p-3 rounded-2xl bg-white/95 dark:bg-slate-800/90 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-200/80 dark:border-slate-700 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-lg">&#10024;</span>
+                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">+15 XP</span>
+                        </div>
+                        <div class="font-display font-bold text-xs sm:text-sm text-slate-900 dark:text-white">5-Item Desk Tidy</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">90s • Quick visual win</div>
+                    </button>
+
+                    <button type="button" onclick="triggerDopamineHit('Box Breathing (4-4-4-4)', 60, '&#127788;')" class="text-left p-3 rounded-2xl bg-white/95 dark:bg-slate-800/90 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-200/80 dark:border-slate-700 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-lg">&#127788;</span>
+                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">+15 XP</span>
+                        </div>
+                        <div class="font-display font-bold text-xs sm:text-sm text-slate-900 dark:text-white">4-4-4-4 Breath Reset</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">1m • Quiet overwhelm</div>
+                    </button>
+
+                    <button type="button" onclick="spinRandomDopamineHit()" class="text-left p-3 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 border border-amber-500 transition shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-lg">&#127922;</span>
+                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/80 text-slate-900">+20 XP</span>
+                        </div>
+                        <div class="font-display font-extrabold text-xs sm:text-sm">Surprise Spin!</div>
+                        <div class="text-[11px] font-medium text-slate-900/80">Can't pick? Let roulette choose</div>
+                    </button>
+                </div>
+            </div>
+
             <!-- Two-Column Grid: Open Tabs & Task Paralysis Buster -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -484,7 +558,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="autoGroupThoughtsWithAI()" id="ai-group-thoughts-btn" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:opacity-95 text-white text-xs font-bold shadow-sm transition">
-                                &#129668; AI Auto-Group
+                                &#129668; Auto-Group
                             </button>
                             <button type="button" onclick="clearAllThoughts()" class="text-xs font-medium text-slate-400 hover:text-rose-500 transition">
                                 Clear All
@@ -786,97 +860,11 @@
 
     </main>
 
-    <!-- Cloud & Local Storage Persistence Engine -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        async function initCloudSync() {
-            const dotEl = document.getElementById('cloud-sync-dot');
-            const textEl = document.getElementById('cloud-sync-text');
-            try {
-                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
-                    if (textEl) textEl.textContent = 'Saved';
-                    return;
-                }
-                const firebaseConfig = JSON.parse(__firebase_config);
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                const db = getFirestore(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                const user = auth.currentUser;
-                if (!user) return;
-
-                const stateDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'focusflow_state', 'main');
-                let hasLoadedInitial = false;
-
-                onSnapshot(stateDocRef, (snap) => {
-                    if (snap.exists() && !hasLoadedInitial) {
-                        hasLoadedInitial = true;
-                        const data = snap.data();
-                        if (typeof window.applyCloudState === 'function') {
-                            window.applyCloudState(data);
-                        }
-                    } else if (!snap.exists() && !hasLoadedInitial) {
-                        hasLoadedInitial = true;
-                        if (typeof window.getFocusFlowState === 'function') {
-                            window.persistStateToCloud(window.getFocusFlowState());
-                        }
-                    }
-                    if (dotEl) dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
-                    if (textEl) textEl.textContent = 'Saved';
-                }, (err) => {
-                    if (textEl) textEl.textContent = 'Saved';
-                });
-
-                let saveTimer = null;
-                window.persistStateToCloud = function(currentState) {
-                    if (!auth.currentUser) return;
-                    if (textEl) textEl.textContent = 'Saving...';
-                    clearTimeout(saveTimer);
-                    saveTimer = setTimeout(async () => {
-                        try {
-                            await setDoc(stateDocRef, {
-                                currentTab: currentState.currentTab,
-                                darkMode: Boolean(currentState.darkMode),
-                                energyLevel: currentState.energyLevel,
-                                winsToday: Number(currentState.winsToday || 0),
-                                xp: Number(currentState.xp || 0),
-                                streak: Number(currentState.streak || 1),
-                                activeTaskId: currentState.activeTaskId ?? null,
-                                activeTabs: currentState.activeTabs || [],
-                                thoughts: currentState.thoughts || [],
-                                taskBacklog: currentState.taskBacklog || [],
-                                updatedAt: Date.now()
-                            }, { merge: true });
-                            if (dotEl) dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
-                            if (textEl) textEl.textContent = 'Saved';
-                        } catch (saveErr) {
-                            if (textEl) textEl.textContent = 'Saved';
-                        }
-                    }, 400);
-                };
-            } catch (err) {
-                if (textEl) textEl.textContent = 'Saved';
-            }
-        }
-
-        initCloudSync();
-    </script>
-
     <script>
         // ==========================================
         // 1. CORE APP STATE, GAMIFICATION & NAVIGATION
         // ==========================================
-        const STORAGE_KEY = 'focusflow_github_state_v1';
+        const STORAGE_KEY = 'focusflow_github_state_v2';
         const DEFAULT_STATE = {
             currentTab: 'active',
             darkMode: false,
@@ -920,33 +908,6 @@
         let lastGeneratedSteps = [];
         let pendingTabSwitch = null;
 
-        window.getFocusFlowState = function() {
-            return state;
-        };
-
-        window.applyCloudState = function(remoteData) {
-            state = {
-                ...state,
-                currentTab: remoteData.currentTab || state.currentTab,
-                darkMode: typeof remoteData.darkMode === 'boolean' ? remoteData.darkMode : state.darkMode,
-                energyLevel: remoteData.energyLevel || state.energyLevel,
-                winsToday: typeof remoteData.winsToday === 'number' ? remoteData.winsToday : state.winsToday,
-                xp: typeof remoteData.xp === 'number' ? remoteData.xp : state.xp,
-                streak: typeof remoteData.streak === 'number' ? remoteData.streak : state.streak,
-                activeTaskId: remoteData.activeTaskId !== undefined ? remoteData.activeTaskId : state.activeTaskId,
-                activeTabs: Array.isArray(remoteData.activeTabs) ? remoteData.activeTabs : state.activeTabs,
-                thoughts: Array.isArray(remoteData.thoughts) ? remoteData.thoughts : state.thoughts,
-                taskBacklog: Array.isArray(remoteData.taskBacklog) ? remoteData.taskBacklog : state.taskBacklog
-            };
-            document.documentElement.classList.toggle('dark', Boolean(state.darkMode));
-            setEnergy(state.energyLevel || 'med', true);
-            updateGamificationDisplay();
-            renderActiveTabs();
-            renderThoughts();
-            renderBacklog();
-            switchTab(state.currentTab || 'active', true);
-        };
-
         function saveState() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -962,9 +923,6 @@
                     taskBacklog: state.taskBacklog
                 }));
             } catch (e) {}
-            if (typeof window.persistStateToCloud === 'function') {
-                window.persistStateToCloud(state);
-            }
         }
 
         function escapeHtml(str) {
@@ -1116,7 +1074,59 @@
         }
 
         // ==========================================
-        // 2. HANDS-FREE VOICE INPUT (Web Speech API)
+        // 2. DOPAMINE HITS MICRO-BOOST ENGINE
+        // ==========================================
+        let dopamineInterval = null;
+        let dopamineSecondsLeft = 0;
+
+        function triggerDopamineHit(label, seconds, icon = '&#9889;', bonusXP = 15) {
+            if (dopamineInterval) {
+                clearInterval(dopamineInterval);
+                dopamineInterval = null;
+            }
+            dopamineSecondsLeft = seconds;
+            const banner = document.getElementById('dopamine-active-banner');
+            const timerText = document.getElementById('dopamine-timer-text');
+
+            const renderDopamineTime = () => {
+                const m = Math.floor(dopamineSecondsLeft / 60);
+                const s = dopamineSecondsLeft % 60;
+                if (timerText) timerText.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            };
+
+            if (banner) banner.classList.remove('hidden');
+            renderDopamineTime();
+            playGentleChime();
+            awardXP(bonusXP, `${label}`);
+
+            dopamineInterval = setInterval(() => {
+                if (dopamineSecondsLeft > 0) {
+                    dopamineSecondsLeft--;
+                    renderDopamineTime();
+                } else {
+                    clearInterval(dopamineInterval);
+                    dopamineInterval = null;
+                    if (banner) banner.classList.add('hidden');
+                    playGentleChime();
+                    showToast('Dopamine reset complete! Ready to jump back in!', '&#127919;');
+                }
+            }, 1000);
+        }
+
+        function spinRandomDopamineHit() {
+            const options = [
+                { label: 'Cold Water Splash & Sip', seconds: 120, icon: '&#128167;' },
+                { label: '60-Sec Shake & Stretch', seconds: 60, icon: '&#129336;' },
+                { label: '1 Hype Song Dance Break', seconds: 180, icon: '&#127925;' },
+                { label: '5-Item Desk Clear', seconds: 90, icon: '&#10024;' },
+                { label: 'Box Breathing (4-4-4-4)', seconds: 60, icon: '&#127788;' }
+            ];
+            const pick = options[Math.floor(Math.random() * options.length)];
+            triggerDopamineHit(`Spin Winner: ${pick.label}`, pick.seconds, pick.icon, 20);
+        }
+
+        // ==========================================
+        // 3. HANDS-FREE VOICE INPUT (Web Speech API)
         // ==========================================
         let activeRecognition = null;
         let activeMicBtn = null;
@@ -1189,7 +1199,7 @@
         }
 
         // ==========================================
-        // 3. FOCUS SPRINT TIMER & FINAL 10% BOSS MODE
+        // 4. FOCUS SPRINT TIMER & FINAL 10% BOSS MODE
         // ==========================================
         let timerInterval = null;
         const RING_CIRCUMFERENCE = 326.7256;
@@ -1308,7 +1318,7 @@
         }
 
         // ==========================================
-        // 4. OPEN TABS (MAX 3) & ACTIVE FOCUS ANCHOR
+        // 5. OPEN TABS (MAX 3) & ACTIVE FOCUS ANCHOR
         // ==========================================
         function updateActiveFocusAnchor() {
             const titleEl = document.getElementById('active-task-title');
@@ -1429,7 +1439,7 @@
         }
 
         // ==========================================
-        // 5. TASK PARALYSIS BUSTER (2-MINUTE STEPS)
+        // 6. TASK PARALYSIS BUSTER (2-MINUTE STEPS)
         // ==========================================
         function breakDownTaskWithAI() {
             const input = document.getElementById('shrink-task-input');
@@ -1471,7 +1481,7 @@
         }
 
         // ==========================================
-        // 6. RANDOM THOUGHTS PARKING LOT & AUTO-GROUP
+        // 7. RANDOM THOUGHTS PARKING LOT & AUTO-GROUP
         // ==========================================
         function classifyThought(text) {
             const lower = text.toLowerCase();
@@ -1512,91 +1522,4 @@
                         </div>
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                             <button type="button" onclick="promoteThoughtToTask(${item.id})" class="text-xs font-bold text-purple-600 dark:text-purple-300 hover:underline">+ Move to Tasks</button>
-                            <button type="button" onclick="removeThought(${item.id})" class="text-xs text-slate-400 hover:text-rose-500">Dismiss</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            updateTabBadges();
-        }
-
-        function addThought(e) {
-            if (e) e.preventDefault();
-            const input = document.getElementById('thought-input');
-            if (!input) return;
-            const text = input.value.trim();
-            if (!text) return;
-
-            state.thoughts.unshift({
-                id: Date.now(),
-                text,
-                category: classifyThought(text),
-                createdAt: 'Just now'
-            });
-            input.value = '';
-            saveState();
-            renderThoughts();
-            awardXP(5, 'Parked distraction');
-        }
-
-        function autoGroupThoughtsWithAI() {
-            const order = { 'Action': 1, 'Buy': 2, 'Look Up': 3, 'Idea': 4 };
-            state.thoughts = state.thoughts.map(t => ({
-                ...t,
-                category: classifyThought(t.text)
-            })).sort((a, b) => (order[a.category] || 9) - (order[b.category] || 9));
-            saveState();
-            renderThoughts();
-            showToast('Thoughts sorted into Action, Buy, Look Up & Idea!', '&#129668;');
-        }
-
-        function promoteThoughtToTask(id) {
-            const thought = state.thoughts.find(t => t.id === id);
-            if (!thought) return;
-            state.taskBacklog.unshift({
-                id: Date.now(),
-                text: thought.text,
-                effort: 'quick'
-            });
-            state.thoughts = state.thoughts.filter(t => t.id !== id);
-            saveState();
-            renderThoughts();
-            renderBacklog();
-            showToast('Moved to your Task List Vault!', '&#128203;');
-        }
-
-        function removeThought(id) {
-            state.thoughts = state.thoughts.filter(t => t.id !== id);
-            saveState();
-            renderThoughts();
-        }
-
-        function clearAllThoughts() {
-            state.thoughts = [];
-            saveState();
-            renderThoughts();
-            showToast('Parking lot cleared!', '&#129529;');
-        }
-
-        // ==========================================
-        // 7. TASK LIST VAULT (NAVY & GOLD)
-        // ==========================================
-        let currentBacklogFilter = 'all';
-
-        function filterBacklog(filter) {
-            currentBacklogFilter = filter;
-            ['all', 'quick', 'medium', 'deep'].forEach(f => {
-                const btn = document.getElementById(`filter-${f}`);
-                if (!btn) return;
-                if (f === filter) {
-                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-navy-900 text-gold-300 border border-gold-500/40';
-                } else {
-                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
-                }
-            });
-            renderBacklog();
-        }
-
-        function renderBacklog() {
-            const list = do
+                            <button type="button" onclick="removeThought(${ite
